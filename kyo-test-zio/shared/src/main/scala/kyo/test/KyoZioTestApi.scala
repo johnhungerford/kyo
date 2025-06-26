@@ -18,7 +18,7 @@ trait KyoZioTestApi extends KyoTestApiSync[Either[Any, TestResult]] with KyoTest
     override def assertKyo(assertion: => TestResult)(using f: Frame): Unit < Assert =
         KyoAssert.get(assertion)
 
-    override def runKyoSync(effect: Any < (Assert & Memo & Abort[Any] & IO))(using Frame): Either[Any, TestResult] =
+    override def runKyoSync(effect: Any < (Assert & Memo & Abort[Any] & Sync))(using Frame): Either[Any, TestResult] =
         import AllowUnsafe.embrace.danger
 
         effect.handle(
@@ -30,7 +30,7 @@ trait KyoZioTestApi extends KyoTestApiSync[Either[Any, TestResult]] with KyoTest
             case Result.Failure(e) => Left(e)
             case Result.Panic(thr) => Left(thr)
         }.handle(
-            IO.Unsafe.evalOrThrow
+            Sync.Unsafe.evalOrThrow
         )
     end runKyoSync
 

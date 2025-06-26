@@ -16,7 +16,7 @@ trait KyoScalatestApi extends KyoTestApiSync[Assertion] with KyoTestApiAsync[Fut
     override def assertKyo(assertion: => Assertion)(using f: Frame): Unit < Assert =
         KyoAssert.get(assertion)
 
-    override def runKyoSync(effect: Any < (Assert & Memo & Abort[Any] & IO))(using Frame): Assertion =
+    override def runKyoSync(effect: Any < (Assert & Memo & Abort[Any] & Sync))(using Frame): Assertion =
         import AllowUnsafe.embrace.danger
 
         effect.handle(
@@ -25,11 +25,11 @@ trait KyoScalatestApi extends KyoTestApiSync[Assertion] with KyoTestApiAsync[Fut
             Abort.run[Any](_)
         ).map {
             case Result.Success(_)              => succeed
-            case Result.Failure(thr: Throwable) => IO(throw thr)
-            case Result.Failure(e)              => IO(fail(t"Test failed with Abort: $e".toString))
-            case Result.Panic(thr)              => IO(throw thr)
+            case Result.Failure(thr: Throwable) => Sync(throw thr)
+            case Result.Failure(e)              => Sync(fail(t"Test failed with Abort: $e".toString))
+            case Result.Panic(thr)              => Sync(throw thr)
         }.handle(
-            IO.Unsafe.evalOrThrow
+            Sync.Unsafe.evalOrThrow
         )
     end runKyoSync
 
@@ -43,13 +43,13 @@ trait KyoScalatestApi extends KyoTestApiSync[Assertion] with KyoTestApiAsync[Fut
             Abort.run
         ).map {
             case Result.Success(_)              => succeed
-            case Result.Failure(thr: Throwable) => IO(throw thr)
-            case Result.Failure(e)              => IO(fail(t"Test failed with Abort: $e".toString))
-            case Result.Panic(thr)              => IO(throw thr)
+            case Result.Failure(thr: Throwable) => Sync(throw thr)
+            case Result.Failure(e)              => Sync(fail(t"Test failed with Abort: $e".toString))
+            case Result.Panic(thr)              => Sync(throw thr)
         }.handle(
             Async.run(_),
             _.map(_.toFuture),
-            IO.Unsafe.evalOrThrow
+            Sync.Unsafe.evalOrThrow
         )
     end runKyoAsync
 end KyoScalatestApi

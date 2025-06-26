@@ -12,7 +12,7 @@ trait KyoTestApiSpecialAssertion[Assertion]:
     def assertKyo(assertion: => Assertion)(using Frame): Unit < Assert
 
 trait KyoTestApiSync[TestResultSync] extends KyoTestApiBase:
-    def runKyoSync(effect: Any < (Assert & Memo & Abort[Any] & IO))(using Frame): TestResultSync
+    def runKyoSync(effect: Any < (Assert & Memo & Abort[Any] & Sync))(using Frame): TestResultSync
 
 trait KyoTestApiAsync[TestResultAsync] extends KyoTestApiBase:
     def runKyoAsync(effect: Any < (Assert & Memo & Resource & Abort[Any] & Async))(using Frame): TestResultAsync
